@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains ecat_mark_up.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function ecat_mark_up_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the ecat_mark_up module.
+    case 'help.page.ecat_mark_up':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Makes-up rest generated node xml into ecat complient xml using saxon PE') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ecat_mark_up_theme() {
+  return [
+    'ecat_mark_up' => [
+      'render element' => 'children',
+    ],
+  ];
+}

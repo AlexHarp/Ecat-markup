@@ -1,0 +1,14 @@
+{
+  "name": "drupal/ecat_mark_up",
+  "type": "drupal-module",
+  "description": "Makes-up rest generated node xml into ecat complient xml using saxon PE",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/ecat_mark_up",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/ecat_mark_up",
+    "source": "http://cgit.drupalcode.org/ecat_mark_up"
+  },
+  "require": { }
+}

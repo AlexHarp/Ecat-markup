@@ -1,0 +1,11 @@
+
+services:
+  ecat_mark_up.encoder.ecat:
+    class: Drupal\ecat_mark_up\Encoder\EcatEncoder
+    tags:
+      - { name: encoder, format: eCat_xml }
+  ecat_mark_up.ecatsubscriber:
+    class: Drupal\ecat_mark_up\EventSubscriber\EcatSubscriber
+    tags:
+      - { name: event_subscriber }
+
