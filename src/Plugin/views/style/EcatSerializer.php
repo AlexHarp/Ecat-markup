@@ -11,7 +11,7 @@ namespace Drupal\ecat_mark_up\Plugin\views\style;
 use Drupal\rest\Plugin\views\style\Serializer;
 use Drupal\views\Views;
 use Saxon\SaxonProcessor;
-
+use Drupal\Core\url;
 /**
  * The style plugin for serialized output formats.
  *
@@ -27,6 +27,7 @@ use Saxon\SaxonProcessor;
 class EcatSerializer extends Serializer
 {
     protected $contextArg;
+    protected $filter;
   
     public function query() {
       parent::query();
@@ -44,6 +45,21 @@ class EcatSerializer extends Serializer
      * {@inheritdoc}
      */
   public function render() {
+    if($this->view->args[0]){
+      //check if nid or url alias
+      $this->filter = $this->view->args[0];
+      //if it is not a number
+      $filterTrim = trim($this->filter, "\\");
+      if(!(is_numeric($filterTrim) && $filterTrim > 0 && $filterTrim == round($filterTrim, 0))){
+        $alias = \Drupal::service('path.alias_manager')->getPathByAlias('/'.$this->filter);
+        $params = Url::fromUri("internal:" . $alias)->getRouteParameters();
+        $entity_type = key($params);
+        $node = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
+        $this->filter = $node->nid->value;
+      } 
+    } else {
+      $this->filter = -1;
+    }
 
 // get taxonomy info
     $view = Views::getView('taxonomy_view');
@@ -115,8 +131,8 @@ class EcatSerializer extends Serializer
       if(preg_match('/\<type\>\<target_id\>(\w+)/', $node[1], $matches)){
         if(!strcmp($matches[1],"product")){
           $expandNid = sscanf($node[0], "<nid><value>%d");
-          if($this->view->args[0]){
-            if($this->view->args[0] == $expandNid[0])
+          if($this->filter != -1){
+            if($this->filter == $expandNid[0])
               $retStr .= "<item key=\"".$expandNid[0]."\">".$this->expand($nodeMap, $expandNid[0])."</item>";
           } else {
             $retStr .= "<item key=\"".$expandNid[0]."\">".$this->expand($nodeMap, $expandNid[0])."</item>";
