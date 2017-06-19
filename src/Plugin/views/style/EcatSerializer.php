@@ -70,12 +70,18 @@ class EcatSerializer extends Serializer
       $taxContent = $view->render();//buildRenderable('rest_export_1');
     }
 
+file_put_contents("/var/www/html/sites/default/files/tax.xml", $taxContent['#markup']);
+
 //expand nodes
     $render = parent::render();
-    $xmlJoin = $render.$taxContent['#marksup'];
+    $xmlJoin = $render.$taxContent['#markup'];
     $xmlJoin = str_replace('&nbsp;', '&#160;', $xmlJoin);
+file_put_contents("/var/www/html/sites/default/files/xmlJoin.xml", $xmlJoin);
     $expandedXML = $this->expandXML($xmlJoin);
 
+
+
+file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expandedXML);
 //render xml
     $saxon = new SaxonProcessor(true);
     $xslt = $saxon->newXsltProcessor();
