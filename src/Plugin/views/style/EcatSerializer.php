@@ -70,18 +70,18 @@ class EcatSerializer extends Serializer
       $taxContent = $view->render();//buildRenderable('rest_export_1');
     }
 
-file_put_contents("/var/www/html/sites/default/files/tax.xml", $taxContent['#markup']);
+//file_put_contents("/var/www/html/sites/default/files/tax.xml", $taxContent['#markup']);
 
 //expand nodes
     $render = parent::render();
     $xmlJoin = $render.$taxContent['#markup'];
     $xmlJoin = str_replace('&nbsp;', '&#160;', $xmlJoin);
-file_put_contents("/var/www/html/sites/default/files/xmlJoin.xml", $xmlJoin);
+//file_put_contents("/var/www/html/sites/default/files/xmlJoin.xml", $xmlJoin);
     $expandedXML = $this->expandXML($xmlJoin);
 
 
 
-file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expandedXML);
+//file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expandedXML);
 //render xml
     $saxon = new SaxonProcessor(true);
     $xslt = $saxon->newXsltProcessor();
@@ -93,7 +93,10 @@ file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expand
 
 
   private function expandXML($render){
+  //pure <response> <item> and xml header
+    $render = preg_replace(array('/\<response\>|\<\/response\>/'), '', $render);
     $render = preg_replace(array('/\<item key=\"\d+?\"\>|\<\/item\>/'), '', $render);
+    $render = preg_replace(array('/\<\?xml version=\"1\.0\"\?\>/'), '', $render);
 
     $renderSplits = preg_split('/(\<target_id\>\d+?\<\/target_id\>\<target_type>(?:node|taxonomy_term)\<\/target_type>.*?\<\/url>|\<(?:nid|tid)\>\<value\>\d+\<\/value\>\<\/(?:nid|tid)\>)/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
     $retStr = "";
