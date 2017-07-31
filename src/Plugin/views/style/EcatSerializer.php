@@ -171,6 +171,15 @@ class EcatSerializer extends Serializer
     }
     $retStr = str_replace('\n',"",$retStr);
     $retStr = str_replace('\r',"",$retStr);
+    $retStr = $this->purgeTags($retStr);
     return $retStr;
+  }
+
+  private function purgeTags($str){
+
+    $str = preg_replace(array('/\<\/?p>/'), '', $str);
+    $str = preg_replace(array('/\<\/?span>/'), '', $str);
+    $str = preg_replace(array('/&#\w{3};/'), '', $str);
+    return $str;
   }
 }
