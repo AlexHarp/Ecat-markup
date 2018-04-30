@@ -121,14 +121,10 @@ class EcatSerializer extends Serializer
           $nodeContents[] = $renderSplits[$c];
           $nodeStartIndex = 1; //[1] as [0]m == {
         } else {										//find nid seperators after the first one, adds current node contents to past nid entry on node nap
-//kint($currNode, "Curr niode before map entry");
           $nodeMap[$currNode] = $nodeContents;
-//kint($nodeMap, "node map after entry");
 	  $matches = array();
 	  preg_match('/\<(nid|tid)\>\<value\>(\d+)/', $renderSplits[$c], $matches);
           $currNode = $matches[2];//sscanf($renderSplits[$c], "<nid><value>%d");
-//kint($matches, "matches");
-//kint($matches[2], "matches id for node map");
 
           $nodeContents = array();
           $nodeContents[] = $renderSplits[$c];
@@ -161,9 +157,7 @@ class EcatSerializer extends Serializer
 
   private function expand(&$nodeMap, $expandId){
     $retStr = "";
-//kint($nodeMap, "node map sart");
     if(!array_key_exists($expandId, $nodeMap)){
-      kint($expandId, "gotcha");
       return $expandId;
     }
     $expandCount = 0;
