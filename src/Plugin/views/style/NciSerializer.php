@@ -47,6 +47,7 @@ file_put_contents("/var/www/html/sites/default/files/working.xml", "yes");
     if($this->view->args[0]){
      //check if nid or url alias
       $this->filter = $this->view->args[0];
+dpm($this->filter, "filter");
       //if it is not a number
       $filterTrim = trim($this->filter, "\\");
       if(!(is_numeric($filterTrim) && $filterTrim > 0 && $filterTrim == round($filterTrim, 0))){

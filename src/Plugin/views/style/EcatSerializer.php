@@ -79,8 +79,8 @@ class EcatSerializer extends Serializer
 //file_put_contents("/var/www/html/sites/default/files/xmlJoin.xml", $xmlJoin);
     $expandedXML = $this->expandXML($xmlJoin);
 
-
-
+//return $expandedXML;
+//$here = "here";
 //file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expandedXML);
 //render xml
     $saxon = new SaxonProcessor(true);
@@ -98,6 +98,7 @@ class EcatSerializer extends Serializer
     $render = preg_replace(array('/\<item key=\"\d+?\"\>|\<\/item\>/'), '', $render);
     $render = preg_replace(array('/\<\?xml version=\"1\.0\"\?\>/'), '', $render);
 
+    //seperate into entity items (both nodes and tax)
     $renderSplits = preg_split('/(\<target_id\>\d+?\<\/target_id\>\<target_type>(?:node|taxonomy_term)\<\/target_type>.*?\<\/url>|\<(?:nid|tid)\>\<value\>\d+\<\/value\>\<\/(?:nid|tid)\>)/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
     $retStr = "";
 //Build node map
@@ -111,18 +112,24 @@ class EcatSerializer extends Serializer
         $nid[0] = "%!" . $nid[0] . "%!";
         $renderSplits[$c] = $nid[0];
       } 
-      if(preg_match('/\<(nid|tid)\>\<value\>(\d+)/', $renderSplits[$c] ) == 1){
-        if($nodeStartIndex == -1){
+      //parses untill ids are declared, holds that id untill a new one or eof is found, once new one is found, add everything previous to that as an entry in node map
+      if(preg_match('/\<(nid|tid)\>\<value\>(\d+)/', $renderSplits[$c] ) == 1){			//if a nid or tid value exist in split
+        if($nodeStartIndex == -1){								//if this is the first match (init)
 	  $matches = array();
-	  preg_match('/\<(nid|tid)\>\<value\>(\d+)/', $renderSplits[$c], $matches);
+	  preg_match('/\<(nid|tid)\>\<value\>(\d+)/', $renderSplits[$c], $matches);		//
 	  $currNode = $matches[2];//sscanf($renderSplits[$c], "<nid><value>%d");
           $nodeContents[] = $renderSplits[$c];
           $nodeStartIndex = 1; //[1] as [0]m == {
-        } else {
+        } else {										//find nid seperators after the first one, adds current node contents to past nid entry on node nap
+//kint($currNode, "Curr niode before map entry");
           $nodeMap[$currNode] = $nodeContents;
+//kint($nodeMap, "node map after entry");
 	  $matches = array();
 	  preg_match('/\<(nid|tid)\>\<value\>(\d+)/', $renderSplits[$c], $matches);
           $currNode = $matches[2];//sscanf($renderSplits[$c], "<nid><value>%d");
+//kint($matches, "matches");
+//kint($matches[2], "matches id for node map");
+
           $nodeContents = array();
           $nodeContents[] = $renderSplits[$c];
         }
@@ -154,7 +161,11 @@ class EcatSerializer extends Serializer
 
   private function expand(&$nodeMap, $expandId){
     $retStr = "";
-
+//kint($nodeMap, "node map sart");
+    if(!array_key_exists($expandId, $nodeMap)){
+      kint($expandId, "gotcha");
+      return $expandId;
+    }
     $expandCount = 0;
     foreach($nodeMap[$expandId] as &$row){
       if(preg_match('/%!\d+%!$/', $row)){
