@@ -1,5 +1,12 @@
 <?php
 
+
+/**
+Author: Alexharp
+Date: 2/7/18
+Notes: copy from a badly coded module "ecatEncoder" to provide a quick encoder that can take in xml and output json
+
+*/
 namespace Drupal\ecat_mark_up\Encoder;
 
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
@@ -12,7 +19,7 @@ use Saxon\SaxonProcessor;
  *
  * Simply respond to eCat_xml format requests using the xml encoder.
  */
-class EcatEncoder extends SerializerAwareEncoder implements EncoderInterface{
+class JsonExpanderEncoder extends SerializerAwareEncoder implements EncoderInterface{
 
   /**
    * The formats that this Encoder supports.
@@ -136,8 +143,7 @@ dpm("running");
          $nid = sscanf($row, "%d");
          $row = "";
          $row .= $this->expand($nodeMap, $nid[0]); //if single expand we need to kill the tail comma of te node
-     
-    $expandCount++;
+         $expandCount++;
          $retStr .= $row;
       } else {
         $retStr .=$row;

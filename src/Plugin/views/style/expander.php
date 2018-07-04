@@ -12,88 +12,8 @@ use Drupal\rest\Plugin\views\style\Serializer;
 use Drupal\views\Views;
 use Saxon\SaxonProcessor;
 use Drupal\Core\url;
-/**
- * The style plugin for serialized output formats.
- *
- * @ingroup views_style_plugins
- *
- * @ViewsStyle(
- *   id = "ecat_serializer",
- *   title = @Translation("eCat Serializer"),
- *   help = @Translation("Serializes views row data using the Custom Serializer component."),
- *   display_types = {"data"}
- * )
- */
-class EcatSerializer extends Serializer
-{
-    protected $contextArg;
-    protected $filter;
-  
-    public function query() {
-      parent::query();
-      $this->view->query->where = [];//remove the contextual filter so we can still grab all for recursion
-//      dpm($this->view->query, "query");
-    }
 
-    public function preRender($result) {
-      if (!empty($this->view->rowPlugin)) {
-        $this->view->rowPlugin->preRender($result);
-      }
-    }
-  
-    /**
-     * {@inheritdoc}
-     */
-  public function render() {
-    if($this->view->args[0]){
-      //check if nid or url alias
-      $this->filter = $this->view->args[0];
-      //if it is not a number
-      $filterTrim = trim($this->filter, "\\");
-      if(!(is_numeric($filterTrim) && $filterTrim > 0 && $filterTrim == round($filterTrim, 0))){
-        $alias = \Drupal::service('path.alias_manager')->getPathByAlias('/'.$this->filter);
-        $params = Url::fromUri("internal:" . $alias)->getRouteParameters();
-        $entity_type = key($params);
-        $node = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
-        $this->filter = $node->nid->value;
-      } 
-    } else {
-      $this->filter = -1;
-    }
-
-// get taxonomy info
-    $view = Views::getView('taxonomy_view');
-    if (is_object($view)) {
-      $view->setDisplay('rest_export_1');
-      $view->preExecute();
-      $view->execute();
-      $taxContent = $view->render();//buildRenderable('rest_export_1');
-    }
-
-//file_put_contents("/var/www/html/sites/default/files/tax.xml", $taxContent['#markup']);
-
-//expand nodes
-    $render = parent::render();
-    $xmlJoin = $render.$taxContent['#markup'];
-    $xmlJoin = str_replace('&nbsp;', '&#160;', $xmlJoin);
-//file_put_contents("/var/www/html/sites/default/files/xmlJoin.xml", $xmlJoin);
-    include 'expander.php';
-    $expandedXML = expandXML($xmlJoin, $this->filter);
-
-//return $expandedXML;
-//$here = "here";
-//file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expandedXML);
-//render xml
-    $saxon = new SaxonProcessor(true);
-    $xslt = $saxon->newXsltProcessor();
-    $xslt->compileFromFile("/var/www/html/sites/default/files/eCat-NCIv3.xsl");
-    $xmlStr = $saxon->parseXmlFromString($expandedXML);
-    $xslt->setSourceFromXdmValue($xmlStr);
-    return $xslt->transformToString();
-  }       
-
-
-/*  private function expandXML($render){
+function expandXML($render, $filter){
   //pure <response> <item> and xml header
     $render = preg_replace(array('/\<response\>|\<\/response\>/'), '', $render);
     $render = preg_replace(array('/\<item key=\"\d+?\"\>|\<\/item\>/'), '', $render);
@@ -144,19 +64,19 @@ class EcatSerializer extends Serializer
       if(preg_match('/\<type\>\<target_id\>(\w+)/', $node[1], $matches)){
         if(!strcmp($matches[1],"product")){
           $expandNid = sscanf($node[0], "<nid><value>%d");
-          if($this->filter != -1){
-            if($this->filter == $expandNid[0])
-              $retStr .= "<item key=\"".$expandNid[0]."\">".$this->expand($nodeMap, $expandNid[0])."</item>";
+          if($filter != -1){
+            if($filter == $expandNid[0])
+              $retStr .= "<item key=\"".$expandNid[0]."\">".expand($nodeMap, $expandNid[0])."</item>";
           } else {
-            $retStr .= "<item key=\"".$expandNid[0]."\">".$this->expand($nodeMap, $expandNid[0])."</item>";
+            $retStr .= "<item key=\"".$expandNid[0]."\">".expand($nodeMap, $expandNid[0])."</item>";
           }
         }
       }
     }
     return "<response>".$retStr."</response>";
-  }
+}
 
-  private function expand(&$nodeMap, $expandId){
+function expand(&$nodeMap, $expandId){
     $retStr = "";
     if(!array_key_exists($expandId, $nodeMap)){
       return $expandId;
@@ -167,7 +87,7 @@ class EcatSerializer extends Serializer
          $row = substr($row, 2);
          $nid = sscanf($row, "%d");
          $row = "";
-         $row .= $this->expand($nodeMap, $nid[0]); //if single expand we need to kill the tail comma of te node
+         $row .= expand($nodeMap, $nid[0]); //if single expand we need to kill the tail comma of te node
          $expandCount++;
          $retStr .= $row;
       } else {
@@ -177,15 +97,15 @@ class EcatSerializer extends Serializer
     }
     $retStr = str_replace('\n',"",$retStr);
     $retStr = str_replace('\r',"",$retStr);
-    $retStr = $this->purgeTags($retStr);
+    $retStr = purgeTags($retStr);
     return $retStr;
-  }
+}
 
-  private function purgeTags($str){
+function purgeTags($str){
 
     $str = preg_replace(array('/\<\/?p>/'), '', $str);
     $str = preg_replace(array('/\<\/?span>/'), '', $str);
     $str = preg_replace(array('/&#\w{3};/'), '', $str);
     return $str;
-  }*/
 }
+
