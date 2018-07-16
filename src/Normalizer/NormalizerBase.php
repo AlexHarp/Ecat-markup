@@ -15,5 +15,5 @@ abstract class NormalizerBase extends SerializationNormalizerBase implements Den
    *
    * @var array
    */
-  protected $formats = ['eCat_XML'];
+  protected $formats = ['eCat_xml', 'eCat_json'];
 }
