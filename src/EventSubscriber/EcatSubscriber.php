@@ -19,7 +19,7 @@ class EcatSubscriber implements EventSubscriberInterface {
    *   The Event to process.
    */
   public function onKernelRequest(GetResponseEvent $event) {
-    $event->getRequest()->setFormat('eCat_xml', array('text/eCat_xml'));
+    $event->getRequest()->setFormat('eCat_xml', array('text/xml'));
   }
 
   /**
