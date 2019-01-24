@@ -76,13 +76,14 @@ class EcatSerializer extends Serializer
     $render = parent::render();
     $xmlJoin = $render.$taxContent['#markup'];
     $xmlJoin = str_replace('&nbsp;', '&#160;', $xmlJoin);
+    $xmlJoin = str_replace('<br />', '\\n', $xmlJoin);
 //file_put_contents("/var/www/html/sites/default/files/xmlJoin.xml", $xmlJoin);
     include 'expander.php';
     $expandedXML = expandXML($xmlJoin, $this->filter);
 
 //return $expandedXML;
 //$here = "here";
-//file_put_contents("/var/www/html/sites/default/files/xmlecatexpand.xml", $expandedXML);
+file_put_contents("/var/www/html/sites/default/files/xmlecatexpand-howeIsland.xml", $expandedXML);
 //render xml
     $saxon = new SaxonProcessor(true);
     $xslt = $saxon->newXsltProcessor();
